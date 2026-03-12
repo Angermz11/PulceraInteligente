@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Camera, Mail, Phone, User, MapPin, Calendar, Edit2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { toast } from 'sonner@2.0.3';
 
 interface ProfileScreenProps {
   darkMode: boolean;
@@ -20,6 +21,15 @@ export default function ProfileScreen({ darkMode }: ProfileScreenProps) {
 
   const handleSave = () => {
     setIsEditing(false);
+    toast.success('Perfil actualizado', {
+      description: 'Tus cambios han sido guardados correctamente'
+    });
+  };
+
+  const handlePhotoChange = () => {
+    toast.info('Función de cámara', {
+      description: 'Selecciona una foto de tu galería o toma una nueva'
+    });
   };
 
   return (
@@ -55,7 +65,10 @@ export default function ProfileScreen({ darkMode }: ProfileScreenProps) {
               AR
             </div>
             {isEditing && (
-              <button className="absolute bottom-0 right-0 w-10 h-10 bg-[#2563eb] rounded-full flex items-center justify-center shadow-lg hover:bg-[#1d4ed8]">
+              <button 
+                onClick={handlePhotoChange}
+                className="absolute bottom-0 right-0 w-10 h-10 bg-[#2563eb] rounded-full flex items-center justify-center shadow-lg hover:bg-[#1d4ed8]"
+              >
                 <Camera className="w-5 h-5 text-white" />
               </button>
             )}

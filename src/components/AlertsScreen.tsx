@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { AlertCircle, MapPin, Clock, Filter, Shield } from 'lucide-react';
 import { Button } from './ui/button';
+import { toast } from 'sonner@2.0.3';
+import EmergencyDialog from './EmergencyDialog';
 
 interface AlertsScreenProps {
   darkMode: boolean;
+  onNavigateToLocation?: () => void;
 }
 
 const alertsData = [
@@ -60,8 +63,9 @@ const alertsData = [
   }
 ];
 
-export default function AlertsScreen({ darkMode }: AlertsScreenProps) {
+export default function AlertsScreen({ darkMode, onNavigateToLocation }: AlertsScreenProps) {
   const [filter, setFilter] = useState<'all' | 'emergency' | 'manual'>('all');
+  const [showEmergencyDialog, setShowEmergencyDialog] = useState(false);
 
   const filteredAlerts = filter === 'all' 
     ? alertsData 
@@ -77,6 +81,15 @@ export default function AlertsScreen({ darkMode }: AlertsScreenProps) {
         return 'text-yellow-500 bg-yellow-50 dark:bg-yellow-950/30';
       default:
         return 'text-blue-500 bg-blue-50 dark:bg-blue-950/30';
+    }
+  };
+
+  const handleViewOnMap = (alert: any) => {
+    if (onNavigateToLocation) {
+      onNavigateToLocation();
+      toast.success('Mostrando ubicación de la alerta', {
+        description: alert.location
+      });
     }
   };
 
@@ -180,6 +193,7 @@ export default function AlertsScreen({ darkMode }: AlertsScreenProps) {
                   {alert.coordinates && (
                     <Button 
                       variant="outline" 
+                      onClick={() => handleViewOnMap(alert)}
                       className={`mt-3 rounded-full text-sm ${
                         darkMode ? 'border-gray-700 text-blue-400' : 'border-gray-200 text-blue-600'
                       }`}
@@ -211,10 +225,25 @@ export default function AlertsScreen({ darkMode }: AlertsScreenProps) {
         animate={{ scale: 1 }}
         transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
         whileTap={{ scale: 0.9 }}
+        onClick={() => setShowEmergencyDialog(true)}
         className="fixed bottom-24 right-6 w-16 h-16 bg-red-500 hover:bg-red-600 rounded-full shadow-2xl flex items-center justify-center z-20"
       >
         <Shield className="w-8 h-8 text-white" />
       </motion.button>
+
+      {/* Emergency Dialog */}
+      <EmergencyDialog
+        isOpen={showEmergencyDialog}
+        onClose={() => setShowEmergencyDialog(false)}
+        onConfirm={() => {
+          setShowEmergencyDialog(false);
+          toast.success('Alerta de emergencia enviada', {
+            description: 'Tus contactos han sido notificados',
+            duration: 5000
+          });
+        }}
+        darkMode={darkMode}
+      />
     </div>
   );
 }

@@ -1,17 +1,22 @@
-import image_3521519f8aeac2ff98e73980f3c55c821b88931f from 'figma:asset/3521519f8aeac2ff98e73980f3c55c821b88931f.png';
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Shield, Battery, MapPin, AlertCircle, CheckCircle, Phone } from 'lucide-react';
 import { Button } from './ui/button';
-import logoShield from 'figma:asset/c2e7196379613d07604a35a47c7e9ed8afd840e7.png';
+import { toast } from 'sonner@2.0.3';
+import logoImage from 'figma:asset/977e04baf59f7c254a03bc9ec11e992678d604c5.png';
+import EmergencyDialog from './EmergencyDialog';
+import EmergencyContactsDialog from './EmergencyContactsDialog';
 
 interface HomeScreenProps {
   darkMode: boolean;
+  onNavigateToLocation?: () => void;
 }
 
-export default function HomeScreen({ darkMode }: HomeScreenProps) {
+export default function HomeScreen({ darkMode, onNavigateToLocation }: HomeScreenProps) {
   const [braceletConnected, setBraceletConnected] = useState(true);
   const [batteryLevel, setBatteryLevel] = useState(85);
+  const [showEmergencyDialog, setShowEmergencyDialog] = useState(false);
+  const [showContactsDialog, setShowContactsDialog] = useState(false);
 
   const recentAlerts = [
     { id: 1, type: 'emergency', message: 'Alerta manual enviada', time: 'Hace 2 horas', location: 'Calle Mayor, 45' },
@@ -28,7 +33,7 @@ export default function HomeScreen({ darkMode }: HomeScreenProps) {
           className="flex flex-col items-center"
         >
           <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg mb-4">
-            <img src={image_3521519f8aeac2ff98e73980f3c55c821b88931f} alt="ÉGIDA" className="w-20 h-20 object-contain" />
+            <img src={logoImage} alt="ÉGIDA" className="w-20 h-20 object-contain" />
           </div>
           <h1 className="text-white text-3xl tracking-wide mb-2">ÉGIDA</h1>
           <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
@@ -91,12 +96,23 @@ export default function HomeScreen({ darkMode }: HomeScreenProps) {
           transition={{ delay: 0.3 }}
           className="space-y-3 mb-6"
         >
-          <Button className="w-full h-14 bg-[#1e3a5f] hover:bg-[#152a45] text-white rounded-2xl shadow-md">
+          <Button 
+            onClick={() => setShowContactsDialog(true)}
+            className="w-full h-14 bg-[#1e3a5f] hover:bg-[#152a45] text-white rounded-2xl shadow-md"
+          >
             <Phone className="w-5 h-5 mr-2" />
             Contactos de emergencia
           </Button>
           
-          <Button className="w-full h-14 bg-[#1e3a5f] hover:bg-[#152a45] text-white rounded-2xl shadow-md">
+          <Button 
+            onClick={() => {
+              if (onNavigateToLocation) {
+                onNavigateToLocation();
+                toast.success('Mostrando ubicación compartida');
+              }
+            }}
+            className="w-full h-14 bg-[#1e3a5f] hover:bg-[#152a45] text-white rounded-2xl shadow-md"
+          >
             <MapPin className="w-5 h-5 mr-2" />
             Ver ubicación compartida
           </Button>
@@ -152,10 +168,31 @@ export default function HomeScreen({ darkMode }: HomeScreenProps) {
         animate={{ scale: 1 }}
         transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
         whileTap={{ scale: 0.9 }}
+        onClick={() => setShowEmergencyDialog(true)}
         className="fixed bottom-24 left-1/2 -translate-x-1/2 w-16 h-16 bg-red-500 hover:bg-red-600 rounded-full shadow-2xl flex items-center justify-center z-20"
       >
         <Shield className="w-8 h-8 text-white" />
       </motion.button>
+
+      {/* Dialogs */}
+      <EmergencyDialog
+        isOpen={showEmergencyDialog}
+        onClose={() => setShowEmergencyDialog(false)}
+        onConfirm={() => {
+          setShowEmergencyDialog(false);
+          toast.success('Alerta de emergencia enviada', {
+            description: 'Tus contactos han sido notificados',
+            duration: 5000
+          });
+        }}
+        darkMode={darkMode}
+      />
+
+      <EmergencyContactsDialog
+        isOpen={showContactsDialog}
+        onClose={() => setShowContactsDialog(false)}
+        darkMode={darkMode}
+      />
     </div>
   );
 }

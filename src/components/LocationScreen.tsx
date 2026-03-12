@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { MapPin, Navigation, RefreshCw, Share2, Clock } from 'lucide-react';
 import { Button } from './ui/button';
+import { toast } from 'sonner@2.0.3';
+import MapComponent from './MapComponent';
+import ShareLocationDialog from './ShareLocationDialog';
 
 interface LocationScreenProps {
   darkMode: boolean;
@@ -10,12 +13,31 @@ interface LocationScreenProps {
 export default function LocationScreen({ darkMode }: LocationScreenProps) {
   const [isTracking, setIsTracking] = useState(false);
   const [lastUpdate, setLastUpdate] = useState('Hace 5 minutos');
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const handleRefresh = () => {
     setLastUpdate('Actualizando...');
+    toast.info('Actualizando ubicación...');
     setTimeout(() => {
       setLastUpdate('Ahora');
+      toast.success('Ubicación actualizada');
     }, 1000);
+  };
+
+  const handleShare = (method: string) => {
+    const messages: Record<string, string> = {
+      whatsapp: 'Ubicación compartida por WhatsApp',
+      email: 'Ubicación compartida por Email',
+      copy: 'Enlace copiado al portapapeles'
+    };
+    toast.success(messages[method] || 'Ubicación compartida');
+  };
+
+  const handleToggleTracking = () => {
+    setIsTracking(!isTracking);
+    toast.success(
+      !isTracking ? 'Rastreo en tiempo real activado' : 'Rastreo en tiempo real desactivado'
+    );
   };
 
   return (
@@ -39,45 +61,8 @@ export default function LocationScreen({ darkMode }: LocationScreenProps) {
           transition={{ delay: 0.1 }}
           className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-3xl shadow-xl overflow-hidden mb-6`}
         >
-          {/* Mock Map */}
-          <div className="relative h-80 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-gray-700 dark:to-gray-600">
-            {/* Map placeholder with streets pattern */}
-            <svg className="w-full h-full opacity-30" viewBox="0 0 400 320">
-              <line x1="0" y1="100" x2="400" y2="100" stroke="currentColor" strokeWidth="2" />
-              <line x1="0" y1="200" x2="400" y2="200" stroke="currentColor" strokeWidth="2" />
-              <line x1="100" y1="0" x2="100" y2="320" stroke="currentColor" strokeWidth="2" />
-              <line x1="200" y1="0" x2="200" y2="320" stroke="currentColor" strokeWidth="3" />
-              <line x1="300" y1="0" x2="300" y2="320" stroke="currentColor" strokeWidth="2" />
-            </svg>
-            
-            {/* Location Pin */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full"
-            >
-              <MapPin className="w-12 h-12 text-red-500 fill-red-500/20" />
-            </motion.div>
-
-            {/* Pulse effect */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <motion.div
-                animate={{ scale: [1, 2, 1], opacity: [0.5, 0, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="w-16 h-16 rounded-full bg-red-500"
-              />
-            </div>
-
-            {/* Zoom controls */}
-            <div className="absolute top-4 right-4 flex flex-col gap-2">
-              <button className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg flex items-center justify-center">
-                <span className="text-xl">+</span>
-              </button>
-              <button className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg flex items-center justify-center">
-                <span className="text-xl">−</span>
-              </button>
-            </div>
-          </div>
+          {/* Real Map */}
+          <MapComponent darkMode={darkMode} />
 
           {/* Location Info */}
           <div className="p-5 border-t dark:border-gray-700">
@@ -119,6 +104,7 @@ export default function LocationScreen({ darkMode }: LocationScreenProps) {
           </Button>
 
           <Button
+            onClick={() => setShowShareDialog(true)}
             className={`h-14 rounded-2xl ${
               darkMode 
                 ? 'bg-gray-800 hover:bg-gray-700 text-white' 
@@ -155,7 +141,7 @@ export default function LocationScreen({ darkMode }: LocationScreenProps) {
             </div>
             
             <button
-              onClick={() => setIsTracking(!isTracking)}
+              onClick={handleToggleTracking}
               className={`relative w-14 h-8 rounded-full transition-colors ${
                 isTracking ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
               }`}
@@ -206,6 +192,14 @@ export default function LocationScreen({ darkMode }: LocationScreenProps) {
           </div>
         </motion.div>
       </div>
+
+      {/* Share Location Dialog */}
+      <ShareLocationDialog
+        isOpen={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        onShare={handleShare}
+        darkMode={darkMode}
+      />
     </div>
   );
 }

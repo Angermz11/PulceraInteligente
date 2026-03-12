@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import logoImage from 'figma:asset/3521519f8aeac2ff98e73980f3c55c821b88931f.png';
+import logoImage from 'figma:asset/977e04baf59f7c254a03bc9ec11e992678d604c5.png';
 
 interface RegisterScreenProps {
   onRegister: () => void;
